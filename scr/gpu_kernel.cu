@@ -1,9 +1,7 @@
 #include<stdio.h>
 #include<math.h>
 #include<helper_cuda.h>
-#include<helper_cuda_gl.h>
 #include<helper_functions.h>
-#include<helper_timer.h>
 #include<omp.h>
 #include"gforg.h"
 #include"defaults.h"
@@ -1565,7 +1563,7 @@ check = 0;
 mean = stdev = 0.0;
 *NskippedSubstamps = 0;
 double *sig1, *sig2, *sig3;
-checkCudaErrors(cudaMallocHost((void**)sig1, sizeof(double) * nStamps));
+checkCudaErrors(cudaMallocHost((void**)&sig1, sizeof(double) * nStamps));
 checkCudaErrors(cudaMallocHost(&sig2, sizeof(double) * nStamps));
 checkCudaErrors(cudaMallocHost(&sig3, sizeof(double) * nStamps));
 

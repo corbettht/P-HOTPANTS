@@ -1565,7 +1565,7 @@ check = 0;
 mean = stdev = 0.0;
 *NskippedSubstamps = 0;
 double *sig1, *sig2, *sig3;
-checkCudaErrors(cudaMallocHost(&sig1, sizeof(double) * nStamps));
+checkCudaErrors(cudaMallocHost((void**)&sig1, sizeof(double) * nStamps));
 checkCudaErrors(cudaMallocHost(&sig2, sizeof(double) * nStamps));
 checkCudaErrors(cudaMallocHost(&sig3, sizeof(double) * nStamps));
 

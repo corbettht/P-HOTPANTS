@@ -46,15 +46,15 @@ extern "C" void allocateStamps(stamp_struct *stamps, double **vectors,
 	int i;
 	mat_size = (nCompKer - 1) * nComp + nBGVectors + 1;
 	/* allocating memory on GPU */
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMalloc(vectors,
 					sizeof(double) * (nCompKer + nBGVectors) * SIZE * nStamps));
 
-	checkCudaErrors(cudaMalloc(mat, sizeof(double) * mats * mats * nStamps));
+	CUDA_SAFE_CALL(cudaMalloc(mat, sizeof(double) * mats * mats * nStamps));
 
-	checkCudaErrors(cudaMalloc(scprod, sizeof(double) * mats * nStamps));
+	CUDA_SAFE_CALL(cudaMalloc(scprod, sizeof(double) * mats * nStamps));
 
-	checkCudaErrors(cudaMalloc(KerSol, sizeof(double) * (nCompTotal + 1)));
+	CUDA_SAFE_CALL(cudaMalloc(KerSol, sizeof(double) * (nCompTotal + 1)));
 	/* Initialization */
 	for (i = 0; i < nStamps; i++) {
 		stamps[i].x0 = stamps[i].y0 = stamps[i].x = stamps[i].y = 0;
@@ -79,9 +79,9 @@ extern "C" void freeStampMem(stamp_struct *stamps, double *vectors, double *mat,
 	 * Free ctStamps allocation when ciStamps are used, vice versa
 	 *****************************************************/
 	int i;
-	checkCudaErrors(cudaFree(vectors));
-	checkCudaErrors(cudaFree(mat));
-	checkCudaErrors(cudaFree(scprod));
+	CUDA_SAFE_CALL(cudaFree(vectors));
+	CUDA_SAFE_CALL(cudaFree(mat));
+	CUDA_SAFE_CALL(cudaFree(scprod));
 
 	if (stamps) {
 		for (i = 0; i < nStamps; i++) {
@@ -106,32 +106,32 @@ extern "C" void cuda_init(float *tRData, float *iRData, float **dtRData,
 	rPixX2 = 0.5 * rPixX;
 	rPixY2 = 0.5 * rPixY;
 	vsize = nCompKer + nBGVectors;
-	checkCudaErrors(cudaMalloc(&d_xstamp, sizeof(int) * nStamps));
-	checkCudaErrors(cudaMalloc(&d_ystamp, sizeof(int) * nStamps));
-	checkCudaErrors(cudaMalloc(dtRData, sizeof(float) * rPixX * rPixY));
-	checkCudaErrors(cudaMalloc(diRData, sizeof(float) * rPixX * rPixY));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(cudaMalloc(&d_xstamp, sizeof(int) * nStamps));
+	CUDA_SAFE_CALL(cudaMalloc(&d_ystamp, sizeof(int) * nStamps));
+	CUDA_SAFE_CALL(cudaMalloc(dtRData, sizeof(float) * rPixX * rPixY));
+	CUDA_SAFE_CALL(cudaMalloc(diRData, sizeof(float) * rPixX * rPixY));
+	CUDA_SAFE_CALL(
 			cudaMemcpy(*dtRData, tRData, sizeof(float) * rPixX * rPixY,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(*diRData, iRData, sizeof(float) * rPixX * rPixY,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMalloc(&d_wxy, sizeof(double) * nStamps * ncomp2));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(cudaMalloc(&d_wxy, sizeof(double) * nStamps * ncomp2));
+	CUDA_SAFE_CALL(
 			cudaMalloc(&d_matrix,
 					sizeof(double) * (mat_size + 1) * (mat_size + 1)));
-	checkCudaErrors(cudaMalloc(&d_ksol, sizeof(double) * (nCompTotal + 1)));
-	checkCudaErrors(cudaMalloc(&d_sflag, sizeof(int) * nStamps));
-	checkCudaErrors(cudaMalloc(&d_fx, sizeof(double) * nStamps));
-	checkCudaErrors(cudaMalloc(&d_fy, sizeof(double) * nStamps));
-	checkCudaErrors(cudaMalloc(&dkernel_vec, sizeof(double) * nCompKer * SIZE));
+	CUDA_SAFE_CALL(cudaMalloc(&d_ksol, sizeof(double) * (nCompTotal + 1)));
+	CUDA_SAFE_CALL(cudaMalloc(&d_sflag, sizeof(int) * nStamps));
+	CUDA_SAFE_CALL(cudaMalloc(&d_fx, sizeof(double) * nStamps));
+	CUDA_SAFE_CALL(cudaMalloc(&d_fy, sizeof(double) * nStamps));
+	CUDA_SAFE_CALL(cudaMalloc(&dkernel_vec, sizeof(double) * nCompKer * SIZE));
 
-	checkCudaErrors(cudaMallocHost(&fx, sizeof(double) * nCompKer * fwKernel));
-	checkCudaErrors(cudaMallocHost(&fy, sizeof(double) * nCompKer * fwKernel));
-	checkCudaErrors(cudaMallocHost(&mystamp, sizeof(int) * nStamps));
-	checkCudaErrors(cudaMallocHost(&xstamp, sizeof(int) * nStamps));
-	checkCudaErrors(cudaMallocHost(&ystamp, sizeof(int) * nStamps));
-	checkCudaErrors(cudaMallocHost(&indx, sizeof(int) * nStamps * mats));
+	CUDA_SAFE_CALL(cudaMallocHost(&fx, sizeof(double) * nCompKer * fwKernel));
+	CUDA_SAFE_CALL(cudaMallocHost(&fy, sizeof(double) * nCompKer * fwKernel));
+	CUDA_SAFE_CALL(cudaMallocHost(&mystamp, sizeof(int) * nStamps));
+	CUDA_SAFE_CALL(cudaMallocHost(&xstamp, sizeof(int) * nStamps));
+	CUDA_SAFE_CALL(cudaMallocHost(&ystamp, sizeof(int) * nStamps));
+	CUDA_SAFE_CALL(cudaMallocHost(&indx, sizeof(int) * nStamps * mats));
 
 }
 
@@ -201,9 +201,9 @@ extern "C" void getKernelVec() {
 	int i, j, k;
 	double *filter_x, *filter_y;
 
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMallocHost(&filter_x, sizeof(double) * nCompKer * fwKernel));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMallocHost(&filter_y, sizeof(double) * nCompKer * fwKernel));
 
 	for (i = 0; i < ngauss; i++) {
@@ -219,32 +219,32 @@ extern "C" void getKernelVec() {
 		}
 	}
 
-	checkCudaErrors(cudaMalloc(&dig, sizeof(int) * nCompKer));
-	checkCudaErrors(cudaMalloc(&didegx, sizeof(int) * nCompKer));
-	checkCudaErrors(cudaMalloc(&didegy, sizeof(int) * nCompKer));
-	checkCudaErrors(cudaMalloc(&dren, sizeof(int) * nCompKer));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(cudaMalloc(&dig, sizeof(int) * nCompKer));
+	CUDA_SAFE_CALL(cudaMalloc(&didegx, sizeof(int) * nCompKer));
+	CUDA_SAFE_CALL(cudaMalloc(&didegy, sizeof(int) * nCompKer));
+	CUDA_SAFE_CALL(cudaMalloc(&dren, sizeof(int) * nCompKer));
+	CUDA_SAFE_CALL(
 			cudaMalloc(&dfilter_x, sizeof(double) * nCompKer * fwKernel));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMalloc(&dfilter_y, sizeof(double) * nCompKer * fwKernel));
 
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(dig, ig, sizeof(int) * nCompKer,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(didegx, idegx, sizeof(int) * nCompKer,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(didegy, idegy, sizeof(int) * nCompKer,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(dren, ren, sizeof(int) * nCompKer,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(dfilter_x, filter_x,
 					sizeof(double) * nCompKer * fwKernel,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(dfilter_y, filter_y,
 					sizeof(double) * nCompKer * fwKernel,
 					cudaMemcpyHostToDevice));
@@ -553,19 +553,19 @@ extern "C" int fillStamp(stamp_struct *stamp, double *vectors, double *mat,
 	}
 
 	/* stores kernel weight mask for each order */
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMalloc(&dtemp, sizeof(float) * nStamps * nCompKer * SIZE * 2));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemset(dtemp, 0,
 					sizeof(float) * nStamps * nCompKer * SIZE * 2));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemset(vectors, 0, sizeof(double) * nStamps * vsize * SIZE));
-	checkCudaErrors(cudaMemset(mat, 0, sizeof(double) * nStamps * mats * mats));
-	checkCudaErrors(cudaMemset(scprod, 0, sizeof(double) * nStamps * mats));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(cudaMemset(mat, 0, sizeof(double) * nStamps * mats * mats));
+	CUDA_SAFE_CALL(cudaMemset(scprod, 0, sizeof(double) * nStamps * mats));
+	CUDA_SAFE_CALL(
 			cudaMemcpy(d_xstamp, xstamp, sizeof(int) * nStamps,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(d_ystamp, ystamp, sizeof(int) * nStamps,
 					cudaMemcpyHostToDevice));
 
@@ -580,7 +580,7 @@ extern "C" int fillStamp(stamp_struct *stamp, double *vectors, double *mat,
 
 	gxy_conv_stamp2<<<blocks,thread2>>>(vectors, dtemp, dfilter_x, hwKernel, fwKSStamp, fwKernel ,vsize);
 
-	checkCudaErrors(cudaFree(dtemp));
+	CUDA_SAFE_CALL(cudaFree(dtemp));
 
 	vector_fix<<<block1 , SIZE * 0.25>>>( dren ,vectors, fwKSStamp,vsize);
 
@@ -588,7 +588,7 @@ extern "C" int fillStamp(stamp_struct *stamp, double *vectors, double *mat,
 	/* fill stamp->vectors[nvec+++] with x^(bg) * y^(bg) for background fit*/
 	fill_vec<<< block3, fwKSStamp >>>(vectors, d_xstamp, d_ystamp, rPixX2, rPixY2, nCompKer, fwKSStamp, hwKSStamp, vsize, bgOrder);
 
-	checkCudaErrors (cudaThreadSynchronize());
+	CUDA_SAFE_CALL (cudaThreadSynchronize());
 
 	/* build stamp->mat from stamp->vectors*/
     build_matrix0<<<nStamps*3, vsize*vsize*0.25, sizeof(double)*vsize*vsize/2>>>( mat, vectors , vsize , vsize/2 , pixStamp, mats );
@@ -621,15 +621,15 @@ extern "C" double check_stamps(stamp_struct *stamps, double *vectors,
 	ks = (float *) calloc(nStamps, sizeof(float));
 
 	double *temp_matrix, *testKerSol;
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMallocHost(&temp_matrix,
 					sizeof(double) * nStamps * mats * mats));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(temp_matrix, mat, sizeof(double) * nStamps * mats * mats,
 					cudaMemcpyDeviceToHost));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMallocHost(&testKerSol, sizeof(double) * nStamps * mats));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(testKerSol, scprod, sizeof(double) * nStamps * mats,
 					cudaMemcpyDeviceToHost));
 
@@ -703,7 +703,7 @@ extern "C" double check_stamps(stamp_struct *stamps, double *vectors,
 							stamps[i].diff);
 			}
 
-		checkCudaErrors(
+		CUDA_SAFE_CALL(
 				cudaMemcpy(d_sflag, mystamp, sizeof(int) * ntestStamps,
 						cudaMemcpyHostToDevice));
 
@@ -714,11 +714,11 @@ extern "C" double check_stamps(stamp_struct *stamps, double *vectors,
 		build_matrix_first(stamps, imRef, vectors, mat, scprod, d_sflag, xstamp,
 				ystamp, ntestStamps);
 
-		checkCudaErrors(
+		CUDA_SAFE_CALL(
 				cudaMemcpy(temp_matrix, d_matrix,
 						(mat_size + 1) * sizeof(double) * (mat_size + 1),
 						cudaMemcpyDeviceToHost));
-		checkCudaErrors(
+		CUDA_SAFE_CALL(
 				cudaMemcpy(testKerSol, d_ksol,
 						sizeof(double) * (nCompTotal + 1),
 						cudaMemcpyDeviceToHost));
@@ -730,7 +730,7 @@ extern "C" double check_stamps(stamp_struct *stamps, double *vectors,
 
 		double *temp_kvec = (double*) malloc(
 				(sizeof(double) * nCompKer * SIZE));
-		checkCudaErrors(
+		CUDA_SAFE_CALL(
 				cudaMemcpy(temp_kvec, dkernel_vec,
 						(sizeof(double) * nCompKer * SIZE),
 						cudaMemcpyDeviceToHost));
@@ -865,24 +865,24 @@ void getStampSig(stamp_struct *stamp, double * vectors, double *kernelSol,
 	double *im, tdat, idat, ndat, diff, bg;
 	//int vsize=(nCompKer+nbg_vec)*SIZE;
 
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(d_sflag, mystamp, sizeof(int) * flag,
 					cudaMemcpyHostToDevice));
 
 	float *d_temp;
-	checkCudaErrors(cudaMalloc(&d_temp, sizeof(float) * nStamps * SIZE));
-	checkCudaErrors(cudaMemset(d_temp, 0, sizeof(float) * nStamps * SIZE));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(cudaMalloc(&d_temp, sizeof(float) * nStamps * SIZE));
+	CUDA_SAFE_CALL(cudaMemset(d_temp, 0, sizeof(float) * nStamps * SIZE));
+	CUDA_SAFE_CALL(
 			cudaMemcpy(d_ksol, kernelSol, sizeof(double) * (mat_size + 1),
 					cudaMemcpyHostToDevice));
 	/* temp contains the convolved image from fit, fwKSStamp x fwKSStamp */
 	gmake_model<<<flag, fwKSStamp*fwKSStamp, fwKSStamp*fwKSStamp*sizeof(double)>>> ( vectors, d_fx, d_fy, d_ksol, d_temp , d_sflag, nCompKer, kerOrder, mat_size, vsize * SIZE);
 
 	float * whole_temp = (float*) malloc(sizeof(float) * nStamps * SIZE);
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(whole_temp, d_temp, sizeof(float) * nStamps * SIZE,
 					cudaMemcpyDeviceToHost));
-	checkCudaErrors(cudaFree(d_temp));
+	CUDA_SAFE_CALL(cudaFree(d_temp));
 	float *temp = (float*) malloc(sizeof(float) * fwKSStamp * fwKSStamp);
 
 	mcnt1 = 0;
@@ -1119,16 +1119,16 @@ __inline__ void build_matrix_first(stamp_struct *stamps, float *imRef,
 		fy[i] = (ystamp[i] - rPixY2) / rPixY2;
 	}
 
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(d_fx, fx, sizeof(double) * flag,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(d_fy, fy, sizeof(double) * flag,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(d_xstamp, xstamp, sizeof(int) * flag,
 					cudaMemcpyHostToDevice));
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemcpy(d_ystamp, ystamp, sizeof(int) * flag,
 					cudaMemcpyHostToDevice));
 
@@ -1137,10 +1137,10 @@ __inline__ void build_matrix_first(stamp_struct *stamps, float *imRef,
 	dim3 mblocks(32, (mat_size + 1) / 32 + 1);
 	build_wxy<<<1,flag,0>>>( d_fx, d_fy, d_wxy, kerOrder, ncomp2, rPixX2, rPixY2);
 
-	checkCudaErrors(
+	CUDA_SAFE_CALL(
 			cudaMemset(d_matrix, 0,
 					sizeof(double) * (mat_size + 1) * (mat_size + 1)));
-	checkCudaErrors(cudaMemset(d_ksol, 0, sizeof(double) * (nCompTotal + 1)));
+	CUDA_SAFE_CALL(cudaMemset(d_ksol, 0, sizeof(double) * (nCompTotal + 1)));
 
 	gbuild_matrix<<<mgrid,mblock>>>( d_wxy, mat, d_matrix, mat_size+1, goodstamps, flag, vsize, pixStamp, ncomp1, ncomp2, mats, fwKSStamp);
 
@@ -1383,22 +1383,22 @@ double cSum, cMean, cMedian, cMode, cLfwhm;
 double tdat, idat, ndat, diff, bg;
 
 float *d_temp;
-checkCudaErrors(cudaMalloc(&d_temp, sizeof(float) * nStamps * SIZE));
-checkCudaErrors(cudaMemset(d_temp, 0, sizeof(float) * nStamps * SIZE));
-checkCudaErrors(
+CUDA_SAFE_CALL(cudaMalloc(&d_temp, sizeof(float) * nStamps * SIZE));
+CUDA_SAFE_CALL(cudaMemset(d_temp, 0, sizeof(float) * nStamps * SIZE));
+CUDA_SAFE_CALL(
 		cudaMemcpy(d_sflag, mystamp, sizeof(int) * flag,
 				cudaMemcpyHostToDevice));
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMemcpy(d_ksol, kernelSol, sizeof(double) * (mat_size + 1),
 				cudaMemcpyHostToDevice));
 /* temp contains the convolved image from fit, fwKSStamp x fwKSStamp */
 gmake_model<<<flag, fwKSStamp*fwKSStamp, fwKSStamp*fwKSStamp*sizeof(double)>>> ( vectors, d_fx, d_fy, d_ksol , d_temp , d_sflag, nCompKer, kerOrder, mat_size, vsize * SIZE);
 
 float * whole_temp = (float*) malloc(sizeof(float) * nStamps * SIZE);
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMemcpy(whole_temp, d_temp, sizeof(float) * nStamps * SIZE,
 				cudaMemcpyDeviceToHost));
-checkCudaErrors(cudaFree(d_temp));
+CUDA_SAFE_CALL(cudaFree(d_temp));
 float *temp = (float*) malloc(sizeof(float) * fwKSStamp * fwKSStamp);
 
 int is;
@@ -1502,15 +1502,15 @@ if (cutSStamp(&stamp[istamp], image))
 int xs = stamp[istamp].xss[stamp[istamp].sscnt];
 int ys = stamp[istamp].yss[stamp[istamp].sscnt];
 /* stores kernel weight mask for each order */
-checkCudaErrors(cudaMalloc(&dtemp, sizeof(float) * nCompKer * SIZE * 2));
-checkCudaErrors(cudaMemset(dtemp, 0, sizeof(float) * nCompKer * SIZE * 2));
-checkCudaErrors(
+CUDA_SAFE_CALL(cudaMalloc(&dtemp, sizeof(float) * nCompKer * SIZE * 2));
+CUDA_SAFE_CALL(cudaMemset(dtemp, 0, sizeof(float) * nCompKer * SIZE * 2));
+CUDA_SAFE_CALL(
 		cudaMemset(vectors + istamp * vsize * SIZE, 0,
 				sizeof(double) * vsize * SIZE));
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMemset(mat + istamp * mats * mats, 0,
 				sizeof(double) * mats * mats));
-checkCudaErrors(cudaMemset(scprod + istamp * mats, 0, sizeof(double) * mats));
+CUDA_SAFE_CALL(cudaMemset(scprod + istamp * mats, 0, sizeof(double) * mats));
 
 dim3 thread1((fwKSStamp + fwKernel) * 0.25, fwKSStamp);
 dim3 block1(nCompKer * 4);
@@ -1522,7 +1522,7 @@ one_conv_stamp1<<< nCompKer*4 , thread1>>>( dtemp, dfilter_y, imConv, xs,ys, hwK
 
 one_conv_stamp2<<< nCompKer ,thread2 >>>(vectors, dtemp, dfilter_x, hwKernel, fwKSStamp, fwKernel ,vsize, istamp);
 
-checkCudaErrors(cudaFree(dtemp));
+CUDA_SAFE_CALL(cudaFree(dtemp));
 
 one_vector_fix<<<block1 , SIZE * 0.25>>>( dren ,vectors, fwKSStamp, vsize, istamp);
 
@@ -1530,7 +1530,7 @@ one_vector_fix<<<block1 , SIZE * 0.25>>>( dren ,vectors, fwKSStamp, vsize, istam
 /* fill stamp->vectors[nvec+++] with x^(bg) * y^(bg) for background fit*/
 one_fill_vec<<< block3, fwKSStamp >>>(vectors, xs,ys, rPixX2, rPixY2, nCompKer, fwKSStamp, hwKSStamp, vsize, bgOrder, istamp);
 
-checkCudaErrors (cudaThreadSynchronize());
+CUDA_SAFE_CALL (cudaThreadSynchronize());
 
 /* build stamp->mat from stamp->vectors*/
 one_build_matrix0<<<4,thread3,sizeof(double)*vsize*vsize/2>>>( mat, vectors , vsize , vsize/2 , pixStamp, mats, istamp );
@@ -1565,9 +1565,9 @@ check = 0;
 mean = stdev = 0.0;
 *NskippedSubstamps = 0;
 double *sig1, *sig2, *sig3;
-cudaMallocHost(&sig1, sizeof(double) * nStamps);
-cudaMallocHost(&sig2, sizeof(double) * nStamps);
-cudaMallocHost(&sig3, sizeof(double) * nStamps);
+CUDA_SAFE_CALL(cudaMallocHost(&sig1, sizeof(double) * nStamps));
+CUDA_SAFE_CALL(cudaMallocHost(&sig2, sizeof(double) * nStamps));
+CUDA_SAFE_CALL(cudaMallocHost(&sig3, sizeof(double) * nStamps));
 
 getStampSig_all(stamps, vectors, kernelSol, xstamp, ystamp, mystamp, flag,
 		imNoise, sig1, sig2, sig3);
@@ -1662,9 +1662,9 @@ for (istamp = 0; istamp < nStamps; istamp++) {
 
 fprintf(stderr, "    %d out of %d stamps remain\n", scnt, nStamps);
 
-cudaFreeHost(sig1);
-cudaFreeHost(sig2);
-cudaFreeHost(sig3);
+CUDA_SAFE_CALL(cudaFreeHost(sig1));
+CUDA_SAFE_CALL(cudaFreeHost(sig2));
+CUDA_SAFE_CALL(cudaFreeHost(sig3));
 free(ss);
 return check;
 }
@@ -1685,9 +1685,10 @@ if (verbose >= 2)
 	fprintf(stderr, " Mat_size: %i ncomp2: %i ncomp1: %i nbg_vec: %i \n",
 			mat_size, ncomp2, ncomp1, nbg_vec);
 
-cudaMemset(d_matrix, 0,
-				sizeof(double) * (mat_size + 1) * (mat_size + 1));
-cudaMemset(d_ksol, 0, sizeof(double) * (nCompTotal + 1));
+CUDA_SAFE_CALL(
+		cudaMemset(d_matrix, 0,
+				sizeof(double) * (mat_size + 1) * (mat_size + 1)));
+CUDA_SAFE_CALL(cudaMemset(d_ksol, 0, sizeof(double) * (nCompTotal + 1)));
 
 for (istamp = 0; istamp < nStamps; istamp++) {
 	if (stamps[istamp].sscnt < stamps[istamp].nss) {
@@ -1699,27 +1700,28 @@ for (istamp = 0; istamp < nStamps; istamp++) {
 		flag++;
 	}
 }
-
+CUDA_SAFE_CALL(
 		cudaMemcpy(d_sflag, mystamp, sizeof(int) * flag,
-				cudaMemcpyHostToDevice);
+				cudaMemcpyHostToDevice));
 
 build_matrix_first(stamps, imRef, vectors, mat, scprod, d_sflag, xstamp, ystamp,
 		flag);
 if (verbose >= 2)
 	fprintf(stderr, " Expanding Matrix For Full Fit\n");
 double *temp_matrix;
-
+CUDA_SAFE_CALL(
 		cudaMallocHost(&temp_matrix,
-				sizeof(double) * (mat_size + 1) * (mat_size + 1));
+				sizeof(double) * (mat_size + 1) * (mat_size + 1)));
 
+CUDA_SAFE_CALL(
 		cudaMemcpy(temp_matrix, d_matrix,
 				(mat_size + 1) * sizeof(double) * (mat_size + 1),
-				cudaMemcpyDeviceToHost);
+				cudaMemcpyDeviceToHost));
 
 double * testKerSol = (double*) malloc(sizeof(double) * (nCompTotal + 1));
-
+CUDA_SAFE_CALL(
 		cudaMemcpy(testKerSol, d_ksol, sizeof(double) * (nCompTotal + 1),
-				cudaMemcpyDeviceToHost);
+				cudaMemcpyDeviceToHost));
 
 ludcmp_d1(temp_matrix, mat_size, mat_size + 1, indx);
 lubksb_d1(temp_matrix, mat_size, mat_size + 1, indx, testKerSol);
@@ -1741,20 +1743,20 @@ while (check) {
 		}
 	}
 
-	
-	cudaMemcpy(d_sflag, mystamp, sizeof(int) * nStamps,
-			cudaMemcpyHostToDevice);
+	CUDA_SAFE_CALL(
+			cudaMemcpy(d_sflag, mystamp, sizeof(int) * nStamps,
+					cudaMemcpyHostToDevice));
 	fprintf(stderr, "\n Re-Expanding Matrix\n");
 
 	build_matrix_first(stamps, imRef, vectors, mat, scprod, d_sflag, xstamp,
 			ystamp, flag);
-
-	cudaMemcpy(temp_matrix, d_matrix,
-			(mat_size + 1) * sizeof(double) * (mat_size + 1),
-			cudaMemcpyDeviceToHost);
-	
-	cudaMemcpy(testKerSol, d_ksol, sizeof(double) * (nCompTotal + 1),
-			cudaMemcpyDeviceToHost);
+	CUDA_SAFE_CALL(
+			cudaMemcpy(temp_matrix, d_matrix,
+					(mat_size + 1) * sizeof(double) * (mat_size + 1),
+					cudaMemcpyDeviceToHost));
+	CUDA_SAFE_CALL(
+			cudaMemcpy(testKerSol, d_ksol, sizeof(double) * (nCompTotal + 1),
+					cudaMemcpyDeviceToHost));
 
 	ludcmp_d1(temp_matrix, mat_size, mat_size + 1, indx);
 	lubksb_d1(temp_matrix, mat_size, mat_size + 1, indx, testKerSol);
@@ -1766,9 +1768,9 @@ while (check) {
 }
 fprintf(stderr, " Sigma clipping of bad stamps converged, kernel determined\n");
 
-
-	cudaMemcpy(kernelSol, testKerSol, sizeof(double) * (nCompTotal + 1),
-			cudaMemcpyHostToDevice);
+CUDA_SAFE_CALL(
+		cudaMemcpy(kernelSol, testKerSol, sizeof(double) * (nCompTotal + 1),
+				cudaMemcpyHostToDevice));
 cudaFreeHost(temp_matrix);
 free(testKerSol);
 return;
@@ -2122,33 +2124,33 @@ for (i1 = 0; i1 < nsteps_x; i1++) {
 if (nsteps_x > nStamps) {
 	cudaFree (d_fx);
 	cudaFree (d_fy);
-	checkCudaErrors(cudaMalloc(&d_fx, sizeof(double) * nsteps_x));
-	checkCudaErrors(cudaMalloc(&d_fy, sizeof(double) * nsteps_y));
+	CUDA_SAFE_CALL(cudaMalloc(&d_fx, sizeof(double) * nsteps_x));
+	CUDA_SAFE_CALL(cudaMalloc(&d_fy, sizeof(double) * nsteps_y));
 }
 
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMemcpy(d_fx, fx, sizeof(double) * nsteps_x,
 				cudaMemcpyHostToDevice));
 
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMemcpy(d_fy, fy, sizeof(double) * nsteps_x,
 				cudaMemcpyHostToDevice));
 
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMalloc((void**) &d_kercoe,
 				sizeof(double) * nCompKer * nsteps_x * gpupart));
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMemset(d_kercoe, 0,
 				sizeof(double) * nCompKer * nsteps_x * gpupart));
 
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMalloc((void**) &d_kernel,
 				sizeof(double) * SIZE * nsteps_x * gpupart));
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMemset(d_kernel, 0, sizeof(double) * SIZE * nsteps_x * gpupart));
 
-checkCudaErrors(cudaMallocHost(kernel_sol, sizeof(double) * (nCompTotal + 1)));
-checkCudaErrors(
+CUDA_SAFE_CALL(cudaMallocHost(kernel_sol, sizeof(double) * (nCompTotal + 1)));
+CUDA_SAFE_CALL(
 		cudaMemcpy(*kernel_sol, d_kersol, sizeof(double) * (nCompTotal + 1),
 				cudaMemcpyDeviceToHost));
 
@@ -2156,20 +2158,20 @@ float * d_variance, *dcrdata, *d_vData;
 int *d_cMask;
 int * d_mRdata;
 
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMalloc(&dcrdata, sizeof(float) * xSize * (gpupart + 1) * kcStep));
-checkCudaErrors(
+CUDA_SAFE_CALL(
 		cudaMemset(dcrdata, 0, sizeof(float) * xSize * (gpupart + 1) * kcStep));
 
 for (int i = 0; i < xSize * ySize; i++) {
 	var[i] = (*variance)[i];
 }
 
-checkCudaErrors(cudaMalloc(&d_mRdata, sizeof(int) * xSize * ySize));
-checkCudaErrors(cudaMemset(d_mRdata, 0, sizeof(int) * xSize * ySize));
+CUDA_SAFE_CALL(cudaMalloc(&d_mRdata, sizeof(int) * xSize * ySize));
+CUDA_SAFE_CALL(cudaMemset(d_mRdata, 0, sizeof(int) * xSize * ySize));
 
-checkCudaErrors(cudaMalloc(&d_cMask, sizeof(int) * xSize * ySize));
-checkCudaErrors(
+CUDA_SAFE_CALL(cudaMalloc(&d_cMask, sizeof(int) * xSize * ySize));
+CUDA_SAFE_CALL(
 		cudaMemcpy(d_cMask, cMask, sizeof(int) * xSize * ySize,
 				cudaMemcpyHostToDevice));
 if (dovar) {
@@ -2278,10 +2280,10 @@ for (l = gpupart * kcStep; l < rPixY - hwKernel; l++)
 for (k = hwKernel; k < rPixX - hwKernel; k++)
 cRdata[k + rPixX * l] += get_background(k, l, *kernel_sol);
 
-checkCudaErrors(
+CUDA_SAFE_CALL(
 cudaMemcpy(cRdata, dcrdata, sizeof(float) * xSize * gpupart * kcStep,
 cudaMemcpyDeviceToHost));
-checkCudaErrors(
+CUDA_SAFE_CALL(
 cudaMemcpy(mRData, d_mRdata, sizeof(int) * xSize * gpupart * kcStep,
 cudaMemcpyDeviceToHost));
 
@@ -2290,7 +2292,7 @@ cudaFree(d_cMask);
 cudaFree(d_mRdata);
 
 if (dovar) {
-checkCudaErrors(
+CUDA_SAFE_CALL(
 	cudaMemcpy(vData, d_vData, sizeof(float) * xSize * gpupart * kcStep,
 			cudaMemcpyDeviceToHost));
 cudaFree(d_vData);
@@ -2304,25 +2306,25 @@ return;
 
 extern "C" void cuda_finish(float *dtRData, float *diRData, double *iKerSol,
 double *tKerSol) {
-checkCudaErrors (cudaFree(d_xstamp));checkCudaErrors( cudaFree(d_ystamp));
-checkCudaErrors( cudaFree(dtRData));
-checkCudaErrors( cudaFree(diRData));
-checkCudaErrors( cudaFree(d_wxy));
-checkCudaErrors( cudaFree(d_matrix));
-checkCudaErrors( cudaFree(d_ksol));
-checkCudaErrors( cudaFree(d_sflag));
-checkCudaErrors( cudaFree(d_fx));
-checkCudaErrors( cudaFree(d_fy));
-checkCudaErrors( cudaFree(d_kercoe));
-checkCudaErrors( cudaFree(d_kernel));
-checkCudaErrors( cudaFree(dkernel_vec));
+CUDA_SAFE_CALL (cudaFree(d_xstamp));CUDA_SAFE_CALL( cudaFree(d_ystamp));
+CUDA_SAFE_CALL( cudaFree(dtRData));
+CUDA_SAFE_CALL( cudaFree(diRData));
+CUDA_SAFE_CALL( cudaFree(d_wxy));
+CUDA_SAFE_CALL( cudaFree(d_matrix));
+CUDA_SAFE_CALL( cudaFree(d_ksol));
+CUDA_SAFE_CALL( cudaFree(d_sflag));
+CUDA_SAFE_CALL( cudaFree(d_fx));
+CUDA_SAFE_CALL( cudaFree(d_fy));
+CUDA_SAFE_CALL( cudaFree(d_kercoe));
+CUDA_SAFE_CALL( cudaFree(d_kernel));
+CUDA_SAFE_CALL( cudaFree(dkernel_vec));
 
-checkCudaErrors( cudaFreeHost(fx));
-checkCudaErrors( cudaFreeHost(fy));
-checkCudaErrors( cudaFreeHost(mystamp));
-checkCudaErrors( cudaFreeHost(xstamp));
-checkCudaErrors( cudaFreeHost(ystamp));
-checkCudaErrors( cudaFreeHost(indx));
+CUDA_SAFE_CALL( cudaFreeHost(fx));
+CUDA_SAFE_CALL( cudaFreeHost(fy));
+CUDA_SAFE_CALL( cudaFreeHost(mystamp));
+CUDA_SAFE_CALL( cudaFreeHost(xstamp));
+CUDA_SAFE_CALL( cudaFreeHost(ystamp));
+CUDA_SAFE_CALL( cudaFreeHost(indx));
 
 cudaDeviceReset();
 return;

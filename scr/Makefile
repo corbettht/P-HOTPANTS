@@ -4,11 +4,11 @@
 # THE STANDARD PLACES
 # 
 
-CFITSIOINCDIR =  ../include/
+CFITSIOINCDIR =  /usr/include/cfitsio/
 LIBDIR        =  /usr/lib/$(ARCH)
-CUTIL_HOME      = /data/gbai/SDK/SDK/C
-CUDA_HOME       = /usr/local/cuda-5.5
-NVCCFLAGS       = -O2 -arch=sm_20
+CUHELP_HOME      = /usr/local/cuda/samples
+CUDA_HOME       = /usr/local/cuda/
+NVCCFLAGS       = -O2 -arch=sm_30
 
 
 #
@@ -31,9 +31,9 @@ NVCCFLAGS       = -O2 -arch=sm_20
 
 # standard usage
 COPTS = -funroll-loops -O3 -std=c99 -pedantic-errors -Wall -I$(CFITSIOINCDIR)
-LIBS  = -L../lib -L/usr/local/cuda/lib64 -L$(CUTIL_HOME)/lib -lcutil_x86_64 -lm -lcfitsio -lcudart  -lstdc++
+LIBS  = -L../lib -L/usr/local/cuda/lib64 -L$(CUHELP_HOME)/lib -lm -lcfitsio -lcudart  -lstdc++
 
-INCLUDE =  -I./ -I$(CUDA_HOME)/include -I$(CUTIL_HOME)/common/inc/
+INCLUDE =  -I./ -I$(CUDA_HOME)/include -I$(CUHELP_HOME)/common/inc/
 # compiler
 CC    = gcc 
 NVCC  = nvcc

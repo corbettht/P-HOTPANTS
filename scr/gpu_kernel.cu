@@ -1564,9 +1564,9 @@ check = 0;
 mean = stdev = 0.0;
 *NskippedSubstamps = 0;
 double *sig1, *sig2, *sig3;
-checkCudaErrors(cudaMallocHost((void**)&sig1, sizeof(double) * nStamps));
-checkCudaErrors(cudaMallocHost(&sig2, sizeof(double) * nStamps));
-checkCudaErrors(cudaMallocHost(&sig3, sizeof(double) * nStamps));
+cudaMallocHost((void**)&sig1, sizeof(double) * nStamps);
+cudaMallocHost(&sig2, sizeof(double) * nStamps);
+cudaMallocHost(&sig3, sizeof(double) * nStamps);
 
 getStampSig_all(stamps, vectors, kernelSol, xstamp, ystamp, mystamp, flag,
 		imNoise, sig1, sig2, sig3);
@@ -1661,9 +1661,9 @@ for (istamp = 0; istamp < nStamps; istamp++) {
 
 fprintf(stderr, "    %d out of %d stamps remain\n", scnt, nStamps);
 
-checkCudaErrors(cudaFreeHost(sig1));
-checkCudaErrors(cudaFreeHost(sig2));
-checkCudaErrors(cudaFreeHost(sig3));
+cudaFreeHost(sig1);
+cudaFreeHost(sig2);
+cudaFreeHost(sig3);
 free(ss);
 return check;
 }
@@ -1684,10 +1684,10 @@ if (verbose >= 2)
 	fprintf(stderr, " Mat_size: %i ncomp2: %i ncomp1: %i nbg_vec: %i \n",
 			mat_size, ncomp2, ncomp1, nbg_vec);
 
-checkCudaErrors(
+
 		cudaMemset(d_matrix, 0,
-				sizeof(double) * (mat_size + 1) * (mat_size + 1)));
-checkCudaErrors(cudaMemset(d_ksol, 0, sizeof(double) * (nCompTotal + 1)));
+				sizeof(double) * (mat_size + 1) * (mat_size + 1));
+cudaMemset(d_ksol, 0, sizeof(double) * (nCompTotal + 1));
 
 for (istamp = 0; istamp < nStamps; istamp++) {
 	if (stamps[istamp].sscnt < stamps[istamp].nss) {
@@ -1699,28 +1699,25 @@ for (istamp = 0; istamp < nStamps; istamp++) {
 		flag++;
 	}
 }
-checkCudaErrors(
+
 		cudaMemcpy(d_sflag, mystamp, sizeof(int) * flag,
-				cudaMemcpyHostToDevice));
+				cudaMemcpyHostToDevice);
 
 build_matrix_first(stamps, imRef, vectors, mat, scprod, d_sflag, xstamp, ystamp,
 		flag);
 if (verbose >= 2)
 	fprintf(stderr, " Expanding Matrix For Full Fit\n");
 double *temp_matrix;
-checkCudaErrors(
 		cudaMallocHost(&temp_matrix,
-				sizeof(double) * (mat_size + 1) * (mat_size + 1)));
+				sizeof(double) * (mat_size + 1) * (mat_size + 1));
 
-checkCudaErrors(
 		cudaMemcpy(temp_matrix, d_matrix,
 				(mat_size + 1) * sizeof(double) * (mat_size + 1),
-				cudaMemcpyDeviceToHost));
+				cudaMemcpyDeviceToHost);
 
 double * testKerSol = (double*) malloc(sizeof(double) * (nCompTotal + 1));
-checkCudaErrors(
 		cudaMemcpy(testKerSol, d_ksol, sizeof(double) * (nCompTotal + 1),
-				cudaMemcpyDeviceToHost));
+				cudaMemcpyDeviceToHost);
 
 ludcmp_d1(temp_matrix, mat_size, mat_size + 1, indx);
 lubksb_d1(temp_matrix, mat_size, mat_size + 1, indx, testKerSol);
@@ -1742,20 +1739,17 @@ while (check) {
 		}
 	}
 
-	checkCudaErrors(
 			cudaMemcpy(d_sflag, mystamp, sizeof(int) * nStamps,
-					cudaMemcpyHostToDevice));
+					cudaMemcpyHostToDevice);
 	fprintf(stderr, "\n Re-Expanding Matrix\n");
 
 	build_matrix_first(stamps, imRef, vectors, mat, scprod, d_sflag, xstamp,
 			ystamp, flag);
-	checkCudaErrors(
 			cudaMemcpy(temp_matrix, d_matrix,
 					(mat_size + 1) * sizeof(double) * (mat_size + 1),
-					cudaMemcpyDeviceToHost));
-	checkCudaErrors(
+					cudaMemcpyDeviceToHost);
 			cudaMemcpy(testKerSol, d_ksol, sizeof(double) * (nCompTotal + 1),
-					cudaMemcpyDeviceToHost));
+					cudaMemcpyDeviceToHost);
 
 	ludcmp_d1(temp_matrix, mat_size, mat_size + 1, indx);
 	lubksb_d1(temp_matrix, mat_size, mat_size + 1, indx, testKerSol);
@@ -1767,9 +1761,8 @@ while (check) {
 }
 fprintf(stderr, " Sigma clipping of bad stamps converged, kernel determined\n");
 
-checkCudaErrors(
 		cudaMemcpy(kernelSol, testKerSol, sizeof(double) * (nCompTotal + 1),
-				cudaMemcpyHostToDevice));
+				cudaMemcpyHostToDevice);
 cudaFreeHost(temp_matrix);
 free(testKerSol);
 return;
